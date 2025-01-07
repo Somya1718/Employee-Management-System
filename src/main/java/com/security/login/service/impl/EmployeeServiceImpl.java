@@ -70,5 +70,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.deleteById(employeeId);
 
     }
+
+    @Override
+    public Employee findByEmail(String email) {
+        return employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found with email: " + email));
+    }
+    
 }
 

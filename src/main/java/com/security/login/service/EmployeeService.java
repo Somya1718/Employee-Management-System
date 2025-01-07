@@ -1,6 +1,7 @@
 package com.security.login.service;
 
 import com.security.login.dto.EmployeeDto;
+import com.security.login.entity.Employee;
 
 import java.util.List;
 
@@ -14,6 +15,8 @@ public interface EmployeeService {
     EmployeeDto updateEmployee(Long employeeId, EmployeeDto updatedEmployee);
 
     void deleteEmployee(Long employeeId);
+
+    Employee findByEmail(String email);
 
 }
 
