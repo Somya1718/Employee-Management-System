@@ -1,22 +1,97 @@
 import React, { useState } from 'react';
 import './LoginRegisterPage.css';
+import { signUp, loginUser } from '../services/user-service'; 
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const LoginRegisterPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState(""); // State to store email
+  const [password, setPassword] = useState(""); // State to store password
+  const navigate = useNavigate(); // Replace useHistory with useNavigate
 
-  const handleLogin = (e) => {
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+    
+  //   try {
+  //     const response = await loginUser({ email, password });
+  //     if (response.data) {
+  //       toast.success("Login Successful!");
+  //       const role = response.data.role; // Assuming role is part of the response
+  //       if (role === 'admin') {
+  //         navigate('/admin'); // Navigate to admin page if the user is an admin
+  //       } else {
+  //         navigate('/user'); // Navigate to user page if the user is a regular user
+  //       }
+  //     }
+  //   } catch (error) {
+  //     let errorMessage = "Login Failed";
+  //     if (error.response?.data) {
+  //       errorMessage += `: ${error.response.data}`;
+  //     }
+  //     toast.error(errorMessage);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Add your login logic here
-    setTimeout(() => setIsLoading(false), 1000);
-  };
+    
+    try {
+        const response = await loginUser({ email, password });
+        if (response.data) {
+            toast.success("Login Successful!");
+            const designation = response.data.designation?.toLowerCase();
+            
+            // Check if designation is admin
+            if (designation === 'admin') {
+                navigate('/admin');
+            } else {
+                navigate('/user');
+            }
+        }
+    } catch (error) {
+        let errorMessage = "Login Failed";
+        if (error.response?.data) {
+            errorMessage += `: ${error.response.data}`;
+        }
+        toast.error(errorMessage);
+    } finally {
+        setIsLoading(false);
+    }
+};
+  
+  
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Add your registration logic here
-    setTimeout(() => setIsLoading(false), 1000);
+
+    const formData = new FormData(e.target);
+    const data = {
+      firstName: formData.get("firstName"),
+      lastName: formData.get("lastName"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      yrsOfExp: parseInt(formData.get("yrsOfExp")),
+      designation: formData.get("designation"),
+      phoneNumber: formData.get("phoneNumber"),
+    };
+
+    try {
+      const response = await signUp(data);
+      toast.success("Registration Successful!");
+      console.log("User Registered Successfully", response.data);
+    } catch (error) {
+      toast.error("Registration Failed");
+      console.error("User Registration Failed", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -28,13 +103,13 @@ const LoginRegisterPage = () => {
         <h2>Employee Management System</h2>
 
         <div className="tabs">
-          <button 
+          <button
             className={`tab ${isLogin ? 'active' : ''}`}
             onClick={() => setIsLogin(true)}
           >
             Login
           </button>
-          <button 
+          <button
             className={`tab ${!isLogin ? 'active' : ''}`}
             onClick={() => setIsLogin(false)}
           >
@@ -48,6 +123,8 @@ const LoginRegisterPage = () => {
               <input
                 type="email"
                 placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="input-field"
               />
@@ -56,16 +133,11 @@ const LoginRegisterPage = () => {
               <input
                 type="password"
                 placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="input-field"
               />
-            </div>
-            <div className="form-extras">
-              <label className="remember-me">
-                <input type="checkbox" />
-                Remember me
-              </label>
-              <a href="#" className="forgot-password">Forgot password?</a>
             </div>
             <button type="submit" disabled={isLoading} className="submit-btn">
               {isLoading ? "Logging in..." : "Login"}
@@ -76,7 +148,17 @@ const LoginRegisterPage = () => {
             <div className="form-group">
               <input
                 type="text"
-                placeholder="Full Name"
+                name="firstName"
+                placeholder="First Name"
+                required
+                className="input-field"
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Last Name"
                 required
                 className="input-field"
               />
@@ -84,6 +166,7 @@ const LoginRegisterPage = () => {
             <div className="form-group">
               <input
                 type="email"
+                name="email"
                 placeholder="Email"
                 required
                 className="input-field"
@@ -92,6 +175,7 @@ const LoginRegisterPage = () => {
             <div className="form-group">
               <input
                 type="password"
+                name="password"
                 placeholder="Password"
                 required
                 className="input-field"
@@ -99,8 +183,9 @@ const LoginRegisterPage = () => {
             </div>
             <div className="form-group">
               <input
-                type="password"
-                placeholder="Confirm Password"
+                type="number"
+                name="yrsOfExp"
+                placeholder="Years of Experience"
                 required
                 className="input-field"
               />
@@ -108,15 +193,8 @@ const LoginRegisterPage = () => {
             <div className="form-group">
               <input
                 type="text"
-                placeholder="Employee ID"
-                required
-                className="input-field"
-              />
-            </div>
-            <div className="form-group">
-              <input
-                type="tel"
-                placeholder="Phone Number"
+                name="designation"
+                placeholder="Designation"
                 required
                 className="input-field"
               />
